@@ -1,0 +1,13 @@
+**** Playing level with seed 1590191438878 ****
+Playing with [0:EMCTS(XIN_XI), 1:MCTS(IMPERIUS)] (1/1)
+Game seed: 1794939226062
+Agents random seed: 1794939226062
+Level seed: 1590191438878
+51; Game Results: 
+ #1: Tribe IMPERIUS (MCTSPlayer): WIN, 12630 points; #tech: 24, #cities: 2, production: 18
+Diplomacy - #wars: 10, #stars sent: 250
+ #2: Tribe XIN_XI (EMCTSAgent): LOSS, 11643 points; #tech: 24, #cities: 1, production: 10
+Diplomacy - #wars: 20, #stars sent: 153
+--------- RESULTS ---------
+[N:1];[%:100.00];[W:1];[S:12630.00];[T:24.00];[C:2.00];[P:18.00];[D:10.00];[R:250.00];[Player:1:MCTS]
+[N:1];[%:0.00];[W:0];[S:11643.00];[T:24.00];[C:1.00];[P:10.00];[D:20.00];[R:153.00];[Player:0:EMCTS]

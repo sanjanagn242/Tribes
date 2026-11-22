@@ -4,6 +4,8 @@ import org.json.JSONArray;
 import players.*;
 import gui.GUI;
 import gui.WindowInput;
+import players.actor_critic_mcts.ACMCTSParams;
+import players.actor_critic_mcts.ACMCTSPlayer;
 import players.emcts.EMCTSAgent;
 import players.emcts.EMCTSParams;
 import players.heuristics.PrunePortfolioHeuristic;
@@ -70,7 +72,8 @@ class Run {
         RHEA,
         OEP,
         EMCTS,
-        PORTFOLIO_MCTS
+        PORTFOLIO_MCTS,
+        AC_MCTS
     }
 
     public static double K_INIT_MULT = 0.5;
@@ -102,6 +105,7 @@ class Run {
             case "OEP": return Run.PlayerType.OEP;
             case "pMCTS": return Run.PlayerType.PORTFOLIO_MCTS;
             case "EMCTS": return Run.PlayerType.EMCTS;
+            case "ACMCTS": return Run.PlayerType.AC_MCTS;
         }
         throw new Exception("Error: unrecognized Player Type: " + arg);
     }
@@ -193,6 +197,16 @@ class Run {
                 emctsParams.stop_type = emctsParams.STOP_FMCALLS;
                 emctsParams.heuristic_method = emctsParams.DIFF_HEURISTIC;
                 return new EMCTSAgent(agentSeed,emctsParams);
+            case AC_MCTS:
+                ACMCTSParams acParams = new ACMCTSParams();
+                acParams.stop_type = acParams.STOP_FMCALLS;
+                acParams.heuristic_method = acParams.DIFF_HEURISTIC;
+                acParams.PRIORITIZE_ROOT = true;
+                acParams.ROLLOUT_LENGTH = MAX_LENGTH;
+                acParams.FORCE_TURN_END = FORCE_TURN_END ? 5 : acParams.ROLLOUT_LENGTH + 1;
+                acParams.USE_PRIORS = true;      // PUCT with the network's priors (uniform for UniformNetwork)
+                acParams.USE_VALUE_NET = false;  // leaf value from DIFF heuristic; UniformNetwork's value is a constant 0
+                return new ACMCTSPlayer(agentSeed, acParams);
             case RHEA:
                 RHEAParams rheaParams = new RHEAParams();
                 rheaParams.stop_type = rheaParams.STOP_FMCALLS;

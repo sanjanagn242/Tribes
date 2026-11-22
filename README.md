@@ -87,9 +87,87 @@ To run round-robin tournaments between multiple AI players, run class `Tournamen
 
 Tournament results indicate number of games played (N), number of wins (W) and win rate, score (S), number of technologies researched (T), number of cities (C) and star production (P) for each player. 
 
+### Reading the results
+
+At the end of a tournament, `Tournament.java` prints one line per player under `--------- RESULTS ---------`, for example:
+
+```
+--------- RESULTS ---------
+[N:1];[%:100.00];[W:1];[S:13407.00];[T:24.00];[C:3.00];[P:28.00];[D:17.00];[R:202.00];[Player:1:MCTS]
+[N:1];[%:0.00];[W:0];[S:7121.00];[T:24.00];[C:0.00];[P:0.00];[D:28.00];[R:171.00];[Player:0:EMCTS]
+```
+
+| Field | Meaning | Aggregated as |
+|-------|---------|---------------|
+| `N` | Games this player took part in | count |
+| `%` | Win rate, `100 · W / N` | percentage |
+| `W` | Games won | total |
+| `S` | Final game score | mean over games |
+| `T` | Technologies researched by the end of the game (24 is the whole tech tree) | mean |
+| `C` | Cities owned at the end of the game | mean |
+| `P` | Star production per turn at the end of the game (sum over the tribe's cities) | mean |
+| `D` | Wars declared by this tribe | mean |
+| `R` | Stars sent to other tribes | mean |
+| `Player:id:TYPE` | Index of the player in the config's `"Players"` list, and its agent type | — |
+
+All values except `N`, `%` and `W` are **averages per game**, measured on the final game state. Lines are sorted best first: by total wins, then mean `S`, `T`, `C`, `P`, `D`, `R`.
+
+In the example, MCTS won the only game. It finished with 3 cities and 28 stars per turn, and EMCTS ended with no cities (and therefore 0 production) because it had been conquered.
+
+**How a game is won**
+
+* **Capitals mode:** a tribe wins as soon as it owns every capital. If nobody has done that by the turn limit (`Constants.MAX_TURNS_CAPITALS`, 50 by default), the game ends and the tribe ranked first wins.
+* **Score mode:** the game runs to the turn limit (`MAX_TURNS`, 30), and the tribe ranked first wins.
+* **Ranking**, used to pick the winner at the turn limit: highest score first, then techs, cities, production, wars declared and stars sent, in that order. A full tie is broken at random.
+
+So a win in Capitals mode can mean either a conquest or a score win at the turn limit. A winner with all the cities (as above) is usually a conquest. Look at the per-game lines (`#1: Tribe ... WIN`) further up in the output to check individual games.
+
+**Other lines in the output**
+
+* `Playing with [0:MCTS(XIN_XI), 1:EMCTS(IMPERIUS)] (3/10)`: the game about to start, with each player's id, agent type and tribe. With `"Shift Tribes": true`, players rotate tribes and turn order from one game to the next.
+* `#1: Tribe IMPERIUS (EMCTSAgent): WIN, 13986 points; #tech: 24, #cities: 3, production: 28` and the `Diplomacy - ...` line below it: final results of a single game.
+* `FM: Action [...] couldn't execute?`: printed by the forward model when an agent simulates an action that is no longer legal during its search. This is harmless. Filter it out with `grep -v '^FM:'`.
+* `Error running a game, trying again.`: the game crashed (the stack trace is on stderr) and is replayed with a new game seed. Crashed games are not counted in the results.
+
+**Pairwise round robin**
+
+`Tournament.java` puts *all* listed players into every game (an N-player free-for-all) and only rotates their seats. To get 1v1 results for every pair instead, use `round_robin.py`:
+
+```
+python3 round_robin.py --players MCTS EMCTS RHEA --jobs 3
+```
+
+It runs each pair as its own tournament with the other settings from `tournament.json`, and writes to `results/round_robin_<timestamp>/`:
+
+* the `RESULTS` lines above, for each pair, in `<pair>.out`;
+* `summary.txt`: a win-rate matrix (the row player's wins against the column player), overall wins, win rate, average score and average rounds per player, then games, rounds (avg/min/max/total) and time per pair, totals, and total wall time;
+* `summary.csv`: one row per player per pair, with games, wins, win rate, average score, average rounds and time.
+
+"Rounds" are the turns a game lasted (the number in the `44; Game Results:` line). In Capitals mode a game that hits the turn limit ends at round 51, so 51 means no conquest: the winner was decided by ranking. A lower number means the game ended by conquest.
+
 ## Game configuration
 
 The game itself can be modified by changing its configuration (e.g. attack power of certain units) in the `core.TribesConfig.java` file.
+
+## In-game randomness
+
+Besides map generation (driven by the level seed), the game has its own random number generator, seeded with the **game seed**. `Game.init` creates it (`rnd = new Random(seed)` in `src/core/game/Game.java`) and passes it to `GameState`. Game code reads it through `GameState.getRandomGenerator()`. It decides the following:
+
+| Event | Where |
+|-------|-------|
+| Bonus from examining ruins (picked at random) | `ExamineCommand.java` → `Types.EXAMINE_BONUS.random(...)` |
+| Explorer's random walk (only reveals tiles with partial observability) | `Board.launchExplorer(...)` |
+| Random technology received on meeting another tribe (only with partial observability) | `Tribe.meetTribe(...)` (called from `Tribe.clearView(...)`) |
+| Random technology research | `TechnologyTree.researchAtRandom(...)` |
+| Where a pushed unit ends up (e.g. after an attack) | `Board.pushUnit(...)` / `Board.tryPush(...)`, called from `AttackCommand.java` |
+| Which cities units move to when a city is captured | `Board.moveOneToNewCity(...)` / `Board.moveAllFromCity(...)` (`Collections.shuffle`) |
+
+Combat damage is deterministic.
+
+Fixing the game seed (`"Game Seed"` in `play.json`; `-1` means use the current time) makes the real game's random events repeatable. There are two exceptions:
+
+* `GameState.copy()` gives each copy a fresh, unseeded `new Random()`. Agents that simulate with the forward model (MCTS, RHEA, OEP, ...) therefore see different random outcomes in their simulations from one run to the next.
+* `TribeResult.compareTo(...)` breaks a full tie in the final ranking with an unseeded `new Random()`.
 
 # Associated research
 

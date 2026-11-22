@@ -207,11 +207,14 @@ public class EMCTSAgent extends Agent {
             newSeq.add(seq.get(i));
         }
         ArrayList<Action> allAvailableActions = this.allGoodActions(gs, m_rnd);
-        Action a = allAvailableActions.get(m_rnd.nextInt(allAvailableActions.size()));
-        newSeq.add(a);
+        // If the replayed prefix ended the game (or the turn), there is nothing to mutate: keep the prefix only.
+        if (!allAvailableActions.isEmpty() && !gs.isGameOver() && gs.getActiveTribeID() == getPlayerID()) {
+            Action a = allAvailableActions.get(m_rnd.nextInt(allAvailableActions.size()));
+            newSeq.add(a);
 
-        for (int i = moveToMutate + 1; i < seq.size(); i++) {
-            newSeq.add(seq.get(i));
+            for (int i = moveToMutate + 1; i < seq.size(); i++) {
+                newSeq.add(seq.get(i));
+            }
         }
         newSeq = repair(newSeq, clone);
         EMCTSTreeNode newNode = new EMCTSTreeNode(newSeq, node);
@@ -225,7 +228,8 @@ public class EMCTSAgent extends Agent {
         ArrayList<Action> repairedChild = new ArrayList<>();
 
         for (int a = 0; a < child.size(); a++) {
-            if (!(gs.getActiveTribeID() == getPlayerID())) {
+            // Stop once the game is over or our turn has ended: no legal actions remain for us.
+            if (gs.isGameOver() || gs.getActiveTribeID() != getPlayerID()) {
                 return repairedChild;
             }
 
@@ -234,6 +238,7 @@ public class EMCTSAgent extends Agent {
 
                 if (!done) {
                     ArrayList<Action> allAvailableActions = this.allGoodActions(gs.copy(), m_rnd);
+                    if (allAvailableActions.isEmpty()) return repairedChild;
                     Action ac = allAvailableActions.get(m_rnd.nextInt(allAvailableActions.size()));
                     advance(gs, ac);
                     repairedChild.add(ac);
@@ -243,12 +248,14 @@ public class EMCTSAgent extends Agent {
                 }
             } catch (Exception e) {
                 ArrayList<Action> allAvailableActions = this.allGoodActions(gs, m_rnd);
+                if (allAvailableActions.isEmpty()) return repairedChild;
                 Action ac = allAvailableActions.get(m_rnd.nextInt(allAvailableActions.size()));
                 advance(gs, ac);
                 repairedChild.add(ac);
             }
         }
-        if (!(repairedChild.get(repairedChild.size() - 1).getActionType() == Types.ACTION.END_TURN)) {
+        if (!repairedChild.isEmpty() && !gs.isGameOver() && gs.getActiveTribeID() == getPlayerID()
+                && !(repairedChild.get(repairedChild.size() - 1).getActionType() == Types.ACTION.END_TURN)) {
             ArrayList<Action> allAvailableActions = this.allGoodActions(gs, m_rnd);
             Action end = null; ;
             for(Action a : allAvailableActions){
@@ -257,7 +264,7 @@ public class EMCTSAgent extends Agent {
                     break;
                 }
             }
-            repairedChild.add(end);
+            if (end != null) repairedChild.add(end);
         }
 
         return repairedChild;

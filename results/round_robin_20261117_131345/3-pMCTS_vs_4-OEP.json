@@ -1,0 +1,27 @@
+{
+  "Game Mode": "Capitals",
+  "Repetitions": 1,
+  "Rollouts": false,
+  "Search Depth": 20,
+  "Force End": false,
+  "Population Size": 1,
+  "Players": [
+    "pMCTS",
+    "OEP"
+  ],
+  "Tribes": [
+    "Xin Xi",
+    "Imperius"
+  ],
+  "Shift Tribes": true,
+  "Verbose": false,
+  "Level Seeds": [
+    "1590191438878"
+  ],
+  "Progressive Bias": true,
+  "Pruning": true,
+  "K init mult": 0.5,
+  "T mult": 2.0,
+  "A mult": 1.5,
+  "B": 1.3
+}

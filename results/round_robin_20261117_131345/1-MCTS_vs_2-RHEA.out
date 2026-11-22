@@ -1,0 +1,13 @@
+**** Playing level with seed 1590191438878 ****
+Playing with [0:MCTS(XIN_XI), 1:RHEA(IMPERIUS)] (1/1)
+Game seed: 1794939309496
+Agents random seed: 1794939309496
+Level seed: 1590191438878
+45; Game Results: 
+ #1: Tribe IMPERIUS (RHEAAgent): WIN, 16182 points; #tech: 24, #cities: 3, production: 23
+Diplomacy - #wars: 4, #stars sent: 87
+ #2: Tribe XIN_XI (MCTSPlayer): LOSS, 6766 points; #tech: 24, #cities: 0, production: 0
+Diplomacy - #wars: 8, #stars sent: 91
+--------- RESULTS ---------
+[N:1];[%:100.00];[W:1];[S:16182.00];[T:24.00];[C:3.00];[P:23.00];[D:4.00];[R:87.00];[Player:1:RHEA]
+[N:1];[%:0.00];[W:0];[S:6766.00];[T:24.00];[C:0.00];[P:0.00];[D:8.00];[R:91.00];[Player:0:MCTS]

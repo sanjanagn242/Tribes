@@ -14,3 +14,21 @@ py/venv/
 test/
 map/
 map_elites_*
+
+# ---- actor-critic MCTS training outputs (large; regenerate instead of committing)
+# pipeline runs (cluster and local): data, models, logs, frozen code copies
+runs/
+# default outputs of SelfPlay / train_gnn.py when run by hand
+data/selfplay/
+models/
+# self-play data, parsed-data caches, unfinished files, checkpoints
+*.jsonl
+*.jsonl.gz
+*.part
+*.npz
+*.pt
+*.onnx
+# SLURM job logs (sbatch -o logs/...) and nohup output
+logs/
+nohup.out
+__pycache__/

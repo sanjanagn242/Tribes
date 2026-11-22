@@ -1,0 +1,23 @@
+**** Playing level with seed 1590191438878 ****
+Playing with [0:AC_MCTS(XIN_XI), 1:MCTS(IMPERIUS)] (1/2)
+Game seed: 1795316514370
+Agents random seed: 1795316514370
+Level seed: 1590191438878
+51; Game Results: 
+ #1: Tribe XIN_XI (ACMCTSPlayer): WIN, 10080 points; #tech: 24, #cities: 1, production: 9
+Diplomacy - #wars: 18, #stars sent: 155
+ #2: Tribe IMPERIUS (MCTSPlayer): LOSS, 8560 points; #tech: 24, #cities: 1, production: 11
+Diplomacy - #wars: 12, #stars sent: 125
+**** Playing level with seed 1590791907337 ****
+Playing with [1:MCTS(XIN_XI), 0:AC_MCTS(IMPERIUS)] (2/2)
+Game seed: 1795316536756
+Agents random seed: 1795316536757
+Level seed: 1590791907337
+47; Game Results: 
+ #1: Tribe XIN_XI (MCTSPlayer): WIN, 18137 points; #tech: 24, #cities: 4, production: 44
+Diplomacy - #wars: 18, #stars sent: 247
+ #2: Tribe IMPERIUS (ACMCTSPlayer): LOSS, 7752 points; #tech: 24, #cities: 0, production: 0
+Diplomacy - #wars: 15, #stars sent: 202
+--------- RESULTS ---------
+[N:2];[%:50.00];[W:1];[S:13348.50];[T:24.00];[C:2.50];[P:27.50];[D:15.00];[R:186.00];[Player:1:MCTS]
+[N:2];[%:50.00];[W:1];[S:8916.00];[T:24.00];[C:0.50];[P:4.50];[D:16.50];[R:178.50];[Player:0:AC_MCTS]

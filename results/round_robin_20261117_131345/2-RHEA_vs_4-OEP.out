@@ -1,0 +1,28 @@
+**** Playing level with seed 1590191438878 ****
+Playing with [0:RHEA(XIN_XI), 1:OEP(IMPERIUS)] (1/1)
+Game seed: 1794939378647
+Agents random seed: 1794939378647
+Level seed: 1590191438878
+Error running a game, trying again.
+Playing with [0:RHEA(XIN_XI), 1:OEP(IMPERIUS)] (1/1)
+Game seed: 1794939438373
+Agents random seed: 1794939438373
+Level seed: 1590191438878
+Error running a game, trying again.
+Playing with [0:RHEA(XIN_XI), 1:OEP(IMPERIUS)] (1/1)
+Game seed: 1794939488748
+Agents random seed: 1794939488748
+Level seed: 1590191438878
+Error running a game, trying again.
+Playing with [0:RHEA(XIN_XI), 1:OEP(IMPERIUS)] (1/1)
+Game seed: 1794939519182
+Agents random seed: 1794939519182
+Level seed: 1590191438878
+51; Game Results: 
+ #1: Tribe IMPERIUS (OEPAgent): WIN, 11206 points; #tech: 24, #cities: 2, production: 21
+Diplomacy - #wars: 6, #stars sent: 91
+ #2: Tribe XIN_XI (RHEAAgent): LOSS, 8196 points; #tech: 24, #cities: 1, production: 8
+Diplomacy - #wars: 1, #stars sent: 156
+--------- RESULTS ---------
+[N:1];[%:100.00];[W:1];[S:11206.00];[T:24.00];[C:2.00];[P:21.00];[D:6.00];[R:91.00];[Player:1:OEP]
+[N:1];[%:0.00];[W:0];[S:8196.00];[T:24.00];[C:1.00];[P:8.00];[D:1.00];[R:156.00];[Player:0:RHEA]

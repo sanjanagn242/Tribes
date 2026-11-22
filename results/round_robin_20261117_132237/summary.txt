@@ -1,0 +1,35 @@
+Win rate of ROW player against COLUMN player (wins/games):
+
+              EMCTS         MCTS          RHEA          pMCTS         OEP           
+EMCTS         -             0% (0/2)      0% (0/2)      50% (1/2)     50% (1/2)     
+MCTS          100% (2/2)    -             0% (0/2)      50% (1/2)     50% (1/2)     
+RHEA          100% (2/2)    100% (2/2)    -             50% (1/2)     0% (0/2)      
+pMCTS         50% (1/2)     50% (1/2)     50% (1/2)     -             100% (2/2)    
+OEP           50% (1/2)     50% (1/2)     100% (2/2)    0% (0/2)      -             
+
+Overall (sorted by win rate):
+Player            Wins   Games    Win %   Avg score  Avg rounds
+RHEA                 5       8    62.5%     10392.6        42.9
+pMCTS                5       8    62.5%      6735.6        34.8
+MCTS                 4       8    50.0%      8252.2        42.2
+OEP                  4       8    50.0%      7154.8        38.8
+EMCTS                2       8    25.0%      6834.5        44.4
+
+Games, rounds (turns per game) and time per pair:
+Pair                             Games Avg rounds   Min   Max    Total   Time
+EMCTS vs MCTS                        2       51.0    51    51      102   2m 08s
+EMCTS vs RHEA                        2       51.0    51    51      102   3m 38s
+EMCTS vs pMCTS                       2       40.0    29    51       80   5m 50s
+EMCTS vs OEP                         2       35.5    20    51       71   4m 45s
+MCTS vs RHEA                         2       38.5    26    51       77   1m 14s
+MCTS vs pMCTS                        2       39.5    28    51       79   2m 32s
+MCTS vs OEP                          2       40.0    29    51       80   5m 17s
+RHEA vs pMCTS                        2       31.0    27    35       62   2m 34s
+RHEA vs OEP                          2       51.0    51    51      102   6m 23s
+pMCTS vs OEP                         2       28.5    23    34       57   1m 35s
+
+Total games: 20, total rounds: 812, avg rounds/game: 40.6
+
+Started:  2026-11-17 13:22:37
+Finished: 2026-11-17 13:34:51
+Total wall time: 12m 13s (10 pairs, --jobs 4)

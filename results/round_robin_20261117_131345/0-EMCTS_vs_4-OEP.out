@@ -1,0 +1,23 @@
+**** Playing level with seed 1590191438878 ****
+Playing with [0:EMCTS(XIN_XI), 1:OEP(IMPERIUS)] (1/1)
+Game seed: 1794939226063
+Agents random seed: 1794939226064
+Level seed: 1590191438878
+Error running a game, trying again.
+Playing with [0:EMCTS(XIN_XI), 1:OEP(IMPERIUS)] (1/1)
+Game seed: 1794939259936
+Agents random seed: 1794939259936
+Level seed: 1590191438878
+Error running a game, trying again.
+Playing with [0:EMCTS(XIN_XI), 1:OEP(IMPERIUS)] (1/1)
+Game seed: 1794939290196
+Agents random seed: 1794939290196
+Level seed: 1590191438878
+25; Game Results: 
+ #1: Tribe IMPERIUS (OEPAgent): WIN, 8803 points; #tech: 24, #cities: 3, production: 16
+Diplomacy - #wars: 6, #stars sent: 23
+ #2: Tribe XIN_XI (EMCTSAgent): LOSS, 1235 points; #tech: 6, #cities: 0, production: 0
+Diplomacy - #wars: 9, #stars sent: 35
+--------- RESULTS ---------
+[N:1];[%:100.00];[W:1];[S:8803.00];[T:24.00];[C:3.00];[P:16.00];[D:6.00];[R:23.00];[Player:1:OEP]
+[N:1];[%:0.00];[W:0];[S:1235.00];[T:6.00];[C:0.00];[P:0.00];[D:9.00];[R:35.00];[Player:0:EMCTS]

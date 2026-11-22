@@ -1,0 +1,150 @@
+# Tribes - command-line usage (run everything from the repo root)
+cd /storage/scratch1/6/snayak89/Tribes
+
+# ---------------------------------------------------------------
+# 1. Compile (Java 8+; JSON library in lib/)
+# ---------------------------------------------------------------
+mkdir -p out
+javac -nowarn -cp lib/json.jar -d out $(find src -name "*.java")
+
+# ---------------------------------------------------------------
+# 2. Play a single game (settings read from ./play.json)
+#    - "Run Mode", "Players", "Tribes", "Game Mode" (Capitals/Score),
+#      seeds, etc. are all set in play.json
+#    - needs a display (GUI). On a cluster use `ssh -X` or an
+#      interactive desktop session, OR turn visuals off (see 4.)
+# ---------------------------------------------------------------
+java -cp out:lib/json.jar Play
+
+# ---------------------------------------------------------------
+# 3. Round-robin tournament between AI players
+#    - defaults to ./tournament.json; pass another JSON as arg 1
+#    - params: game mode (0=Capitals, 1=Score), # repetitions,
+#      max length, force turn end, MCTS rollouts, population size,
+#      players, tribes, level seeds
+# ---------------------------------------------------------------
+java -cp out:lib/json.jar Tournament tournament.json
+
+# save output to a file
+java -cp out:lib/json.jar Tournament tournament.json > tournament_out.txt 2> tournament_err.txt
+java -cp out:lib/json.jar Tournament tournament.json 2> tournament_err.txt | grep --line-buffered -v '^FM:' > tournament_out.txt
+
+
+# ---------------------------------------------------------------
+# 4. Run without visuals (headless, e.g. on a compute node)
+#    set VISUALS = false in src/core/Constants.java, then recompile
+# ---------------------------------------------------------------
+sed -i 's/public static boolean VISUALS = true;/public static boolean VISUALS = false;/' src/core/Constants.java
+javac -nowarn -cp lib/json.jar -d out $(find src -name "*.java")
+
+# (other options in src/core/Constants.java: MAX_TURNS, PLAY_WITH_FULL_OBS,
+#  WRITE_SAVEGAMES, FRAME_DELAY, TURN_LIMITED, TURN_TIME_MILLIS, ...)
+# (game balance settings live in src/core/TribesConfig.java)
+
+# ---------------------------------------------------------------
+# 5. (Optional) Build a runnable jar
+# ---------------------------------------------------------------
+cd out && jar xf ../lib/json.jar && cd ..
+jar cfe Tribes.jar Tournament -C out .
+java -jar Tribes.jar tournament.json
+
+# ===============================================================
+# 6. Actor-critic MCTS (GNN) training
+#    docs: src/players/actor_critic_mcts/README.md
+#          src/players/actor_critic_mcts/slurm/README.md
+#          py/actor_critic/README.md
+# ===============================================================
+
+# ---------------------------------------------------------------
+# 6a. Full training loop on the cluster (the normal way)
+#     self-play on CPU nodes (array) -> train on 1 GPU -> repeat
+#     each node plays n = ceil(GAMES_PER_ITER / SELFPLAY_NODES) games
+# ---------------------------------------------------------------
+# edit the settings first (games per iteration, nodes, iterations,
+# FM calls per move, tribes, game mode, partitions, time limits)
+vim src/players/actor_critic_mcts/slurm/config.sh
+
+# check what would be submitted (submits nothing, but creates and
+# compiles runs/<name>/, so delete it before the real submission)
+DRY_RUN=1 src/players/actor_critic_mcts/slurm/submit.sh my_run
+rm -rf runs/my_run
+
+# submit the whole chain (iterations 0 .. ITERATIONS-1)
+src/players/actor_critic_mcts/slurm/submit.sh my_run
+
+# override settings for one submission without editing config.sh
+ITERATIONS=3 GAMES_PER_ITER=40 SELFPLAY_NODES=4 src/players/actor_critic_mcts/slurm/submit.sh small_test
+
+# progress: queued jobs, games played, model metrics per iteration
+src/players/actor_critic_mcts/slurm/status.sh my_run
+squeue -u $USER
+tail -f runs/my_run/logs/train-my_run-0-*.out
+tail -f runs/my_run/logs/selfplay_iter_000/task001_worker0.log
+
+# resume a run at iteration k (needs runs/my_run/models/iter_00k/best.pt)
+src/players/actor_critic_mcts/slurm/submit.sh my_run 4
+
+# redo one failed self-play task t of iteration k (finished workers are skipped)
+sbatch --array=3 -A gts-mhale30 -q inferno -p cpu-gnr --constraint=graniterapids \
+       --cpus-per-task=8 --mem=48G -t 20:00:00 \
+       --export=ALL,RUN_DIR=$PWD/runs/my_run,ITER=2 \
+       src/players/actor_critic_mcts/slurm/selfplay.sbatch
+
+# cancel the whole run (job ids are listed in runs/my_run/jobs.txt)
+scancel $(grep -oE '[0-9]{6,}' runs/my_run/jobs.txt | sort -u)
+
+# check a GPU partition accepts the request (and when it would start) before using it
+# training uses gpu-v100 by default (8 CPUs OK); gpu-l40s allows at most 4 CPUs per GPU
+sbatch --test-only -A gts-mhale30 -q inferno -p gpu-v100 --gres=gpu:v100:1 \
+       --cpus-per-task=8 --mem=64G -t 08:00:00 --wrap="true"
+
+# ---------------------------------------------------------------
+# 6b. Single steps by hand (testing / debugging)
+# ---------------------------------------------------------------
+# compile
+javac -nowarn -cp lib/json.jar -d out $(find src -name "*.java")
+
+# self-play: iteration 0 uses the uniform network (no model)
+java -cp out:lib/json.jar players.actor_critic_mcts.selfplay.SelfPlay \
+     numGames=3 gameMode=SCORE fmCallsPerMove=300 outputDir=data/selfplay
+
+# self-play with a trained model (run from the repo root; the network
+# runs in a Python subprocess, on GPU if the node has one)
+java -Dtribes.gnn.device=auto -Dtribes.gnn.threads=4 -cp out:lib/json.jar \
+     players.actor_critic_mcts.selfplay.SelfPlay iteration=1 \
+     modelPath=models/iter_001/best.pt outputDir=data/selfplay
+
+# train the GNN (uses the GPU if there is one)
+python3 py/actor_critic/train_gnn.py --data data/selfplay/iter_000 --out models/iter_001
+python3 py/actor_critic/train_gnn.py --data data/selfplay/iter_000 data/selfplay/iter_001 \
+        --init-from models/iter_001/best.pt --out models/iter_002 --epochs 10 --device cuda
+python3 py/actor_critic/train_gnn.py --help
+
+# interactive GPU session for experimenting
+salloc -A gts-mhale30 -q inferno -p gpu-v100 --gres=gpu:v100:1 --cpus-per-task=8 --mem=32G -t 2:00:00
+
+# ---------------------------------------------------------------
+# 6c. Full training loop on a local machine with a GPU
+#     (no SLURM; self-play with several parallel processes, then
+#      training, repeated; same runs/<name>/ layout as the cluster)
+# ---------------------------------------------------------------
+# a few-minute end-to-end check first
+QUICK_TEST=1 src/players/actor_critic_mcts/local/run_loop.sh local_test
+
+# the real run (defaults: 20 iterations x 200 games, 1000 FM calls/move,
+# SCORE mode, WORKERS = CPU cores / 4, 5 epochs on the last 3 iterations)
+src/players/actor_critic_mcts/local/run_loop.sh local_run
+
+# change settings for a new run
+ITERATIONS=10 GAMES_PER_ITER=100 WORKERS=6 src/players/actor_critic_mcts/local/run_loop.sh local_run2
+
+# keep it running after you log out, and watch it
+nohup src/players/actor_critic_mcts/local/run_loop.sh local_run > local_run.out 2>&1 &
+tail -f runs/local_run/loop.log
+column -s, -t runs/local_run/progress.csv      # one line per iteration
+tail -f runs/local_run/logs/selfplay_iter_001_w0.log
+
+# resume after Ctrl-C / a crash / a reboot: run the same command again
+src/players/actor_critic_mcts/local/run_loop.sh local_run
+# run more iterations than the run was started with
+ITERATIONS_OVERRIDE=30 src/players/actor_critic_mcts/local/run_loop.sh local_run
