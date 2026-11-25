@@ -14,6 +14,7 @@ py/venv/
 test/
 map/
 map_elites_*
+.venv/
 
 # ---- actor-critic MCTS training outputs (large; regenerate instead of committing)
 # pipeline runs (cluster and local): data, models, logs, frozen code copies
