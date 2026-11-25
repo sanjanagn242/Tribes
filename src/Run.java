@@ -6,6 +6,8 @@ import gui.GUI;
 import gui.WindowInput;
 import players.actor_critic_mcts.ACMCTSParams;
 import players.actor_critic_mcts.ACMCTSPlayer;
+import players.actor_critic_gae.ActorCriticGAEParams;
+import players.actor_critic_gae.ActorCriticGAEPlayer;
 import players.emcts.EMCTSAgent;
 import players.emcts.EMCTSParams;
 import players.heuristics.PrunePortfolioHeuristic;
@@ -73,7 +75,8 @@ class Run {
         OEP,
         EMCTS,
         PORTFOLIO_MCTS,
-        AC_MCTS
+        AC_MCTS,
+        AC_GAE
     }
 
     public static double K_INIT_MULT = 0.5;
@@ -106,6 +109,7 @@ class Run {
             case "pMCTS": return Run.PlayerType.PORTFOLIO_MCTS;
             case "EMCTS": return Run.PlayerType.EMCTS;
             case "ACMCTS": return Run.PlayerType.AC_MCTS;
+            case "ACGAE": return Run.PlayerType.AC_GAE;
         }
         throw new Exception("Error: unrecognized Player Type: " + arg);
     }
@@ -207,6 +211,12 @@ class Run {
                 acParams.USE_PRIORS = true;      // PUCT with the network's priors (uniform for UniformNetwork)
                 acParams.USE_VALUE_NET = false;  // leaf value from DIFF heuristic; UniformNetwork's value is a constant 0
                 return new ACMCTSPlayer(agentSeed, acParams);
+            case AC_GAE:
+                // GAE actor-critic; checkpoint from -Dtribes.acgae.model=<run dir>/latest.pkl (python/train.py), served by python/serve.py
+                ActorCriticGAEParams acgaeParams = new ActorCriticGAEParams();
+                acgaeParams.MODEL_PATH = System.getProperty("tribes.acgae.model");
+                acgaeParams.GREEDY = Boolean.parseBoolean(System.getProperty("tribes.acgae.greedy", "true"));
+                return new ActorCriticGAEPlayer(agentSeed, acgaeParams);
             case RHEA:
                 RHEAParams rheaParams = new RHEAParams();
                 rheaParams.stop_type = rheaParams.STOP_FMCALLS;

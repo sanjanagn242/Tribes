@@ -2,11 +2,11 @@
 #SBATCH -J acmcts-train
 #SBATCH -A gts-mhale30
 #SBATCH -q inferno
-#SBATCH -p gpu-v100
-#SBATCH --gres=gpu:v100:1
+#SBATCH -p gpu-rtx6000
+#SBATCH --gres=gpu:rtx_6000:1
 #SBATCH -N 1
 #SBATCH -n 1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=6
 #SBATCH --mem=64G
 #SBATCH -t 08:00:00
 #SBATCH -o logs/%x-%j.out

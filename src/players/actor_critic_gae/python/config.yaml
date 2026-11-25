@@ -1,0 +1,15 @@
+# GAE actor-critic, two networks, random opponent (Tribes).
+# Override any key from the command line:  train.sh <run> --set alpha=5.0e-4 lam=0.95
+
+hidden: [64, 64]        # hidden layer widths, used for both actor and critic MLPs
+gamma: 0.99             # discount per agent decision (one Tribes action, not one turn)
+alpha: 1.0e-3           # actor (theta) learning rate
+alpha_phi: 1.0e-3       # critic (phi) learning rate
+beta: 0.0               # entropy bonus weight on the actor; 0.0 = no entropy term
+lam: 0.0                # GAE lambda for the actor's advantage; 0 = one-step TD (simple actor-critic), 1 = Monte Carlo
+episodes_per_iter: 8    # games vs the random opponent per gradient step
+
+# Tribes setup (passed to the Java EnvServer)
+tribes: [XIN_XI, IMPERIUS]   # the agent takes one of the two seats at random each game
+game_mode: SCORE             # SCORE (30 turns, higher score wins) or CAPITALS
+level_seed: -1               # -1 = a new random level every game

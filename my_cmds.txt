@@ -148,3 +148,22 @@ tail -f runs/local_run/logs/selfplay_iter_001_w0.log
 src/players/actor_critic_mcts/local/run_loop.sh local_run
 # run more iterations than the run was started with
 ITERATIONS_OVERRIDE=30 src/players/actor_critic_mcts/local/run_loop.sh local_run
+
+# ===============================================================
+# 7. GAE actor-critic vs random
+#    networks + training in Python (JAX/flax/optax), Tribes games in Java
+#    docs: src/players/actor_critic_gae/README.md
+#    config: src/players/actor_critic_gae/python/config.yaml (lam=0 -> simple actor-critic)
+# ===============================================================
+QUICK_TEST=1 src/players/actor_critic_gae/local/train.sh quick                     # under-a-minute check
+src/players/actor_critic_gae/local/train.sh simple_ac                              # config.yaml (lam=0)
+src/players/actor_critic_gae/local/train.sh gae --set lam=0.95                     # GAE actor-critic
+src/players/actor_critic_gae/local/train.sh b01 --set beta=0.01 --iterations 5000  # any config key
+nohup src/players/actor_critic_gae/local/train.sh gae --set lam=0.95 > /dev/null 2>&1 &
+tail -f runs/actor_critic_gae/gae/train.log
+/storage/scratch1/6/snayak89/tic-tac-toe/venv/bin/python src/players/actor_critic_gae/python/plot.py runs/actor_critic_gae/simple_ac runs/actor_critic_gae/gae
+# continue from a checkpoint (fresh Adam state)
+src/players/actor_critic_gae/local/train.sh gae_more --set lam=0.95 --init runs/actor_critic_gae/gae/latest.pkl
+# play a trained model in tournaments ("ACGAE" in tournament.json); the player runs python/serve.py
+TRIBES_PYTHON=/storage/scratch1/6/snayak89/tic-tac-toe/venv/bin/python \
+java -Dtribes.acgae.model=runs/actor_critic_gae/simple_ac/latest.pkl -cp out:lib/json.jar Tournament tournament.json

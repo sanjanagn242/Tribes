@@ -7,8 +7,8 @@
 #   ITERATIONS=2 GAMES_PER_ITER=4 SELFPLAY_NODES=2 FM_CALLS_PER_MOVE=200 GAME_MODE=SCORE TRAIN_EPOCHS=1 ./submit.sh smoke_test
 
 # ------------------------------------------------------------------ the loop
-ITERATIONS=${ITERATIONS:-20}          # self-play -> train cycles to submit (resume later with submit.sh <run> <k>)
-GAMES_PER_ITER=${GAMES_PER_ITER:-200} # requested games per iteration; rounded up to a multiple of SELFPLAY_NODES
+ITERATIONS=${ITERATIONS:-2}          # self-play -> train cycles to submit (resume later with submit.sh <run> <k>)
+GAMES_PER_ITER=${GAMES_PER_ITER:-20} # requested games per iteration; rounded up to a multiple of SELFPLAY_NODES
 SELFPLAY_NODES=${SELFPLAY_NODES:-20}  # SLURM array size -> n = ceil(200 / 20) = 10 games per task. Keep <= GAMES_PER_ITER
 SELFPLAY_WORKERS=${SELFPLAY_WORKERS:-2} # parallel games per task: 2 x (JVM + 3 torch threads) fills 8 CPUs; 5 games each
 DATA_WINDOW=${DATA_WINDOW:-3}         # train on the latest 3 iterations (~240k samples): enough data, not too stale
@@ -46,9 +46,9 @@ SELFPLAY_MEM=${SELFPLAY_MEM:-48G}
 SELFPLAY_TIME=${SELFPLAY_TIME:-06:00:00}   # ~5 games per worker x 3-5 min, with a wide margin; shorter limits start sooner
 
 # Training (one GPU)
-TRAIN_PARTITION=${TRAIN_PARTITION:-gpu-v100}
-TRAIN_GRES=${TRAIN_GRES:-gpu:v100:1}
-TRAIN_CPUS=${TRAIN_CPUS:-8}         # gpu-v100 accepts 8 (gpu-l40s allows at most 4 per GPU)
+TRAIN_PARTITION=${TRAIN_PARTITION:-gpu-rtx6000}
+TRAIN_GRES=${TRAIN_GRES:-gpu:rtx_6000:1}
+TRAIN_CPUS=${TRAIN_CPUS:-6}         # gpu-rtx6000 allows at most 6 CPUs per GPU (gpu-v100 accepts 8, gpu-l40s at most 4)
 TRAIN_MEM=${TRAIN_MEM:-64G}          # ~240k samples need ~15 GB in memory
 TRAIN_TIME=${TRAIN_TIME:-03:00:00}    # ~5 epochs x 5-10 min on a V100 + a few minutes of data loading
 
